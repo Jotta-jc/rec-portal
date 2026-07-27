@@ -35,34 +35,7 @@ export default function Footer() {
                 Início
               </Link>
             </li>
-
-            <li>
-              <Link
-                href="/categoria/empresas"
-                className="transition hover:text-cyan-400"
-              >
-                Empresas
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/categoria/gestao"
-                className="transition hover:text-cyan-400"
-              >
-                Gestão
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/categoria/lideranca"
-                className="transition hover:text-cyan-400"
-              >
-                Liderança
-              </Link>
-            </li>
-
+  
             <li>
               <Link
                 href="/sobre"

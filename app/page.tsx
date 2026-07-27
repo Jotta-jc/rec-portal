@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import CategoryMenu from "../components/CategoryMenu";
 import FeaturedCard from "../components/FeaturedCard";
 import Hero from "../components/Hero";
