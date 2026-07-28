@@ -16,7 +16,7 @@ export interface News {
   read_time: number;
 
   featured: boolean;
-  featured_order?: number;
+  featured_order: number | null;
 
   published_at: string;
   created_at: string;
