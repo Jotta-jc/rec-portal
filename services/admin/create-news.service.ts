@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
+import { calculateReadingTime } from "@/lib/calculate-reading-time";
 
 type CreateNewsInput = {
   title: string;
@@ -7,16 +8,34 @@ type CreateNewsInput = {
   category_id: number | null;
   featured: boolean;
   featured_order: number | null;
+  featured_image?: string;
 };
 
 export async function createNews(values: CreateNewsInput) {
+  const supabase = createClient();
+
+  const payload = {
+    ...values,
+    read_time: calculateReadingTime(values.content),
+  };
+
+  console.log("ENVIANDO:", payload);
+
+  console.log("PAYLOAD:", payload);
+
   const { data, error } = await supabase
     .from("news")
-    .insert(values)
-    .select("id")
+    .insert(payload)
+    .select()
     .single();
 
-  if (error) throw error;
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
 
   return data;
 }

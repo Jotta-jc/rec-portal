@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import MarkdownContent from "@/components/news/MarkdownContent";
 
 import {
   getNewsBySlug,
@@ -120,11 +121,13 @@ export default async function NewsPage({
 
   <span>•</span>
 
-  <span>{news.read_time} min de leitura</span>
+<span>⏱️ {news.read_time} de leitura</span>
 </div>
 
-<div className="mt-8 flex flex-wrap ...">
-
+<div className="mt-12">
+  <MarkdownContent
+    content={news.content ?? ""}
+  />
 </div>
 
       <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-2xl">
@@ -139,33 +142,6 @@ export default async function NewsPage({
       </div>
 
       
-<article
-  className="
-    prose
-    prose-xl
-    prose-slate
-    mt-12
-    max-w-none
-
-    prose-p:leading-8
-    prose-p:text-slate-700
-
-    prose-h2:mt-12
-    prose-h2:mb-6
-
-    prose-img:rounded-xl
-
-    prose-a:text-cyan-600
-  "
->
-  {news.content
-    ?.split(/\n\s*\n|\r\n\r\n/)
-    .filter((paragraph: string) => paragraph.trim() !== "")
-    .map((paragraph: string, index: number) => (
-      <p key={index}>{paragraph.trim()}</p>
-    ))}
-</article>
-
 <ShareButtons title={news.title} />
 
 <RelatedNews news={relatedNews ?? []} />

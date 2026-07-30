@@ -1,9 +1,13 @@
 import NewsForm from "@/components/admin/news/NewsForm";
 
 import { getAllCategories } from "@/services/admin/category.service";
+import { getTeamMembers } from "@/services/admin/team-members.service";
 
 export default async function NewNewsPage() {
-  const categories = await getAllCategories();
+  const [categories, teamMembers] = await Promise.all([
+    getAllCategories(),
+    getTeamMembers(),
+  ]);
 
   return (
     <>
@@ -14,6 +18,7 @@ export default async function NewNewsPage() {
       <NewsForm
         news={null}
         categories={categories}
+        teamMembers={teamMembers}
       />
     </>
   );

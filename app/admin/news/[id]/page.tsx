@@ -2,6 +2,7 @@ import NewsForm from "@/components/admin/news/NewsForm";
 
 import { getNewsById } from "@/services/admin/news-details.service";
 import { getAllCategories } from "@/services/admin/category.service";
+import { getTeamMembers } from "@/services/admin/team-members.service";
 
 type Props = {
   params: Promise<{
@@ -12,9 +13,10 @@ type Props = {
 export default async function EditNewsPage({ params }: Props) {
   const { id } = await params;
 
-  const [news, categories] = await Promise.all([
+  const [news, categories, teamMembers] = await Promise.all([
     getNewsById(Number(id)),
     getAllCategories(),
+    getTeamMembers(),
   ]);
 
   return (
@@ -30,6 +32,7 @@ export default async function EditNewsPage({ params }: Props) {
       <NewsForm
         news={news}
         categories={categories}
+        teamMembers={teamMembers}
       />
     </>
   );

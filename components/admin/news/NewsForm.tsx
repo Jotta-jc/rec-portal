@@ -19,11 +19,16 @@ import {
 type Props = {
   news: News | null;
   categories: Category[];
+  teamMembers: {
+    id: number;
+    name: string;
+  }[];
 };
 
 export default function NewsForm({
   news,
   categories,
+  teamMembers,
 }: Props) {
   const router = useRouter();
 
@@ -37,6 +42,7 @@ const [formData, setFormData] = useState<NewsFormData>({
   featured: news?.featured ?? false,
   featured_order: news?.featured_order ?? 0,
   featured_image: news?.featured_image ?? "",
+  author: news?.author ?? "",
 });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -45,9 +51,15 @@ const [formData, setFormData] = useState<NewsFormData>({
     try {
       setLoading(true);
 
-      if (news?.id) {
-        await updateNews(news.id, formData);
-      } else {
+if (news?.id) {
+  console.log("=== EDITANDO ===");
+  console.log("ID:", news.id);
+  console.log("DADOS:", formData);
+
+  await updateNews(news.id, formData);
+
+  console.log("UPDATE OK");
+} else {
         const created = await createNews(formData);
 
         router.push(`/admin/news/${created.id}`);
@@ -55,9 +67,9 @@ const [formData, setFormData] = useState<NewsFormData>({
       }
 
       router.refresh();
-    } catch (error) {
-      console.error(error);
-    } finally {
+} catch (error) {
+  console.error("ERRO:", error);
+} finally {
       setLoading(false);
     }
   }
@@ -77,12 +89,13 @@ const [formData, setFormData] = useState<NewsFormData>({
           />
         </div>
 
-        <NewsSidebar
-          categories={categories}
-          formData={formData}
-          setFormData={setFormData}
-          loading={loading}
-        />
+<NewsSidebar
+  categories={categories}
+  teamMembers={teamMembers}
+  formData={formData}
+  setFormData={setFormData}
+  loading={loading}
+/>
       </div>
     </form>
   );
