@@ -43,4 +43,5 @@ export type NewsFormData = Pick<
   | "category_id"
   | "featured"
   | "featured_order"
+  | "featured_image"
 >;

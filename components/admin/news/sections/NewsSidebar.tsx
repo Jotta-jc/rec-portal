@@ -1,5 +1,7 @@
 "use client";
 
+import ImageUpload from "../ImageUpload";
+
 type Props = {
   categories: any[];
   formData: any;
@@ -35,7 +37,7 @@ export default function NewsSidebar({
         </h2>
 
         <select
-          value={formData.category_id}
+          value={formData.category_id ?? ""}
           onChange={(e) =>
             setFormData({
               ...formData,
@@ -55,19 +57,36 @@ export default function NewsSidebar({
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+  <h2 className="mb-5 text-lg font-bold text-slate-900">
+    Imagem Destacada
+  </h2>
+
+  <ImageUpload
+    value={formData.featured_image}
+    onChange={(url) =>
+      setFormData({
+        ...formData,
+        featured_image: url,
+      })
+    }
+  />
+</section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-5 text-lg font-bold text-slate-900">
           Destaque na Home
         </h2>
 
         <select
           value={formData.featured_order}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              featured_order: Number(e.target.value),
-              featured: Number(e.target.value) > 0,
-            })
-          }
+onChange={(e) =>
+  setFormData({
+    ...formData,
+    category_id: e.target.value
+      ? Number(e.target.value)
+      : null,
+  })
+}
           className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-cyan-600"
         >
           <option value={0}>Nenhum</option>

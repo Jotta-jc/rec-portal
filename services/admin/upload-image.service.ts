@@ -1,12 +1,13 @@
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 export async function uploadImage(file: File) {
-  const extension = file.name.split(".").pop();
+  const supabase = createClient();
 
-  const fileName = `${Date.now()}.${extension}`;
+  const extension = file.name.split(".").pop();
+  const fileName = `news/${crypto.randomUUID()}.${extension}`;
 
   const { error } = await supabase.storage
-    .from("news")
+    .from("rec imagens")
     .upload(fileName, file, {
       cacheControl: "3600",
       upsert: false,
@@ -17,7 +18,7 @@ export async function uploadImage(file: File) {
   const {
     data: { publicUrl },
   } = supabase.storage
-    .from("news")
+    .from("rec imagens")
     .getPublicUrl(fileName);
 
   return {

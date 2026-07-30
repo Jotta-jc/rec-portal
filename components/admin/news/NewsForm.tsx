@@ -29,14 +29,15 @@ export default function NewsForm({
 
   const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState<NewsFormData>({
-    title: news?.title ?? "",
-    excerpt: news?.excerpt ?? "",
-    content: news?.content ?? "",
-    category_id: news?.category_id ?? null,
-    featured: news?.featured ?? false,
-    featured_order: news?.featured_order ?? 0,
-  });
+const [formData, setFormData] = useState<NewsFormData>({
+  title: news?.title ?? "",
+  excerpt: news?.excerpt ?? "",
+  content: news?.content ?? "",
+  category_id: news?.category_id ?? null,
+  featured: news?.featured ?? false,
+  featured_order: news?.featured_order ?? 0,
+  featured_image: news?.featured_image ?? "",
+});
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
