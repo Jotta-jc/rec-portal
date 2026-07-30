@@ -13,7 +13,7 @@ export interface News {
   image_url?: string;
 
   author: string;
-  read_time: number;
+  read_time: string;
 
   featured: boolean;
   featured_order: number | null;
@@ -44,4 +44,5 @@ export type NewsFormData = Pick<
   | "featured"
   | "featured_order"
   | "featured_image"
+  | "author"
 >;
