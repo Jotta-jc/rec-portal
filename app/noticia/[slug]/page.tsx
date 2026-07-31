@@ -124,12 +124,6 @@ export default async function NewsPage({
 <span>⏱️ {news.read_time} de leitura</span>
 </div>
 
-<div className="mt-12">
-  <MarkdownContent
-    content={news.content ?? ""}
-  />
-</div>
-
       <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-2xl">
 
         <Image
@@ -141,7 +135,13 @@ export default async function NewsPage({
 
       </div>
 
-      
+<div className="mt-12">
+  <MarkdownContent
+    content={news.content ?? ""}
+  />
+</div>
+
+     
 <ShareButtons title={news.title} />
 
 <RelatedNews news={relatedNews ?? []} />

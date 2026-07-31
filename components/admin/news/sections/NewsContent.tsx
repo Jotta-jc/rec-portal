@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import MarkdownPreview from "../MarkdownPreview";
+import { formatRecMarkdown } from "@/lib/format-rec-markdown";
 
 type Props = {
   formData: any;
@@ -44,6 +45,13 @@ export default function NewsContent({
     });
   }
 
+  function handleFormatREC() {
+  setFormData({
+    ...formData,
+    content: formatRecMarkdown(formData.content),
+  });
+}
+
   const Button = ({
     label,
     before,
@@ -53,6 +61,8 @@ export default function NewsContent({
     before: string;
     after?: string;
   }) => (
+
+
     <button
       type="button"
       onClick={() => insertMarkdown(before, after)}
@@ -82,6 +92,14 @@ export default function NewsContent({
 
       {/* Barra de ferramentas */}
       <div className="mb-6 flex flex-wrap gap-2">
+
+    <button
+  type="button"
+  onClick={handleFormatREC}
+  className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700"
+>
+  ✨ Formatar para REC
+</button>    
         <Button label="B" before="**" after="**" />
         <Button label="I" before="*" after="*" />
         <Button label="H2" before="\n## " />
