@@ -23,14 +23,11 @@ export async function updateNews(id: number, values: any) {
     if (clearError) throw clearError;
   }
 
-  const { data, error } = await supabase
-    .from("news")
-    .update(payload)
-    .eq("id", id)
-    .select();
+const { error } = await supabase
+  .from("news")
+  .update(payload)
+  .eq("id", id)
+  .select();
 
-  console.log("UPDATE DATA:", data);
-  console.log("UPDATE ERROR:", error);
-
-  if (error) throw error;
+if (error) throw error;
 }

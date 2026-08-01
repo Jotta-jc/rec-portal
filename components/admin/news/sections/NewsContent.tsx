@@ -45,10 +45,12 @@ export default function NewsContent({
     });
   }
 
-  function handleFormatREC() {
+function handleFormatREC() {
+  const formatted = formatRecMarkdown(formData.content ?? "");
+
   setFormData({
     ...formData,
-    content: formatRecMarkdown(formData.content),
+    content: formatted,
   });
 }
 
@@ -93,13 +95,14 @@ export default function NewsContent({
       {/* Barra de ferramentas */}
       <div className="mb-6 flex flex-wrap gap-2">
 
-    <button
+<button
   type="button"
   onClick={handleFormatREC}
   className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700"
 >
   ✨ Formatar para REC
-</button>    
+</button>
+
         <Button label="B" before="**" after="**" />
         <Button label="I" before="*" after="*" />
         <Button label="H2" before="\n## " />

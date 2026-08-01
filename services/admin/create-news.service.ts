@@ -19,18 +19,11 @@ export async function createNews(values: CreateNewsInput) {
     read_time: calculateReadingTime(values.content),
   };
 
-  console.log("ENVIANDO:", payload);
-
-  console.log("PAYLOAD:", payload);
-
   const { data, error } = await supabase
     .from("news")
     .insert(payload)
     .select()
     .single();
-
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
 
   if (error) {
     console.error(error);

@@ -1,47 +1,58 @@
 export function formatRecMarkdown(text: string): string {
-  let content = text.trim();
+  if (!text?.trim()) return "";
 
-  // Normaliza quebras de linha
-  content = content.replace(/\r\n/g, "\n");
+  let content = text
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim();
 
-  // Converte listas: 1 -  => 1.
-  content = content.replace(/^(\d+)\s*-\s*/gm, "$1. ");
+  // 1 - Texto → 1. Texto
+  content = content.replace(
+    /^(\d+)\s*-\s+/gm,
+    "$1. "
+  );
 
-  // Converte marcadores • em -
-  content = content.replace(/^•\s+/gm, "- ");
+  // • Texto → - Texto
+  content = content.replace(
+    /^•\s+/gm,
+    "- "
+  );
 
-  // Adiciona H2 em linhas isoladas
-  const lines = content.split("\n");
+  const blocks = content.split(/\n\s*\n/);
 
-  const result: string[] = [];
+  const formattedBlocks = blocks.map((block, index) => {
+    const line = block.trim();
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    if (!line) {
-      result.push("");
-      continue;
+    // Primeiro bloco permanece como conteúdo normal
+    if (index === 0) {
+      return line;
     }
 
-    const next = lines[i + 1]?.trim() ?? "";
-
-    const isAlreadyMarkdown =
+    // Preserva Markdown existente
+    if (
       line.startsWith("#") ||
+      line.startsWith(">") ||
       line.startsWith("-") ||
-      /^\d+\./.test(line) ||
-      line.startsWith(">");
-
-    const looksLikeTitle =
-      !isAlreadyMarkdown &&
-      line.length < 80 &&
-      next.length > 80;
-
-    if (looksLikeTitle) {
-      result.push(`## ${line}`);
-    } else {
-      result.push(line);
+      /^\d+\.\s/.test(line)
+    ) {
+      return line;
     }
-  }
 
-  return result.join("\n");
+    // Detecta possíveis subtítulos
+    const isSingleLine = !line.includes("\n");
+
+    const looksLikeHeading =
+      isSingleLine &&
+      line.length >= 3 &&
+      line.length <= 70 &&
+      !/[.!?,;:]$/.test(line);
+
+    if (looksLikeHeading) {
+      return `## ${line}`;
+    }
+
+    return line;
+  });
+
+  return formattedBlocks.join("\n\n").trim();
 }

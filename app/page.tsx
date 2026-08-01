@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
+
 import CategoryMenu from "../components/CategoryMenu";
 import FeaturedCard from "../components/FeaturedCard";
 import Hero from "../components/Hero";
 import NewsCard from "../components/NewsCard";
+import MoreNewsList from "../components/MoreNewsList";
 
 import { getCategories } from "../services/category.service";
 import {
@@ -14,6 +16,7 @@ export default async function Home() {
   const categories = await getCategories();
   const featuredNews = await getFeaturedNews();
   const latestNews = await getLatestNews();
+  const moreNews = await getLatestNews(6, 6);
 
   const hero = featuredNews[0];
   const destaque1 = featuredNews[1];
@@ -78,6 +81,8 @@ export default async function Home() {
         </div>
 
       </section>
+
+          <MoreNewsList news={moreNews} />  
 
     </main>
   );

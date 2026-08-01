@@ -52,13 +52,7 @@ const [formData, setFormData] = useState<NewsFormData>({
       setLoading(true);
 
 if (news?.id) {
-  console.log("=== EDITANDO ===");
-  console.log("ID:", news.id);
-  console.log("DADOS:", formData);
 
-  await updateNews(news.id, formData);
-
-  console.log("UPDATE OK");
 } else {
         const created = await createNews(formData);
 

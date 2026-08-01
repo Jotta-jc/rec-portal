@@ -68,3 +68,26 @@ export async function getRelatedNews(
 
   return data;
 }
+
+export async function searchNews(query: string) {
+  const term = query.trim();
+
+  if (!term) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("news")
+    .select(`
+      *,
+      categories(name, slug)
+    `)
+    .or(
+      `title.ilike.%${term}%,excerpt.ilike.%${term}%,content.ilike.%${term}%`
+    )
+    .order("published_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data ?? [];
+}

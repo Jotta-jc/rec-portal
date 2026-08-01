@@ -10,68 +10,88 @@ export default function MarkdownContent({
   content,
 }: Props) {
   return (
-    <article
-      className="
-        prose
-        prose-lg
-        lg:prose-xl
-        prose-slate
-        max-w-none
-
-        prose-headings:font-bold
-        prose-headings:text-slate-900
-        prose-headings:tracking-tight
-
-        prose-h1:mb-8
-        prose-h1:text-5xl
-
-        prose-h2:mt-16
-        prose-h2:mb-6
-        prose-h2:border-l-4
-        prose-h2:border-cyan-600
-        prose-h2:pl-4
-        prose-h2:text-3xl
-
-        prose-h3:mt-12
-        prose-h3:mb-4
-        prose-h3:text-2xl
-
-        prose-p:my-6
-        prose-p:text-slate-700
-        prose-p:leading-9
-
-        prose-strong:text-slate-900
-
-        prose-ul:my-8
-        prose-ol:my-8
-        prose-li:my-2
-
-        prose-blockquote:my-10
-        prose-blockquote:border-l-4
-        prose-blockquote:border-cyan-600
-        prose-blockquote:bg-slate-50
-        prose-blockquote:py-2
-        prose-blockquote:px-6
-        prose-blockquote:italic
-
-        prose-img:my-10
-        prose-img:rounded-2xl
-        prose-img:shadow-lg
-
-        prose-table:my-10
-        prose-table:w-full
-
-        prose-a:font-medium
-        prose-a:text-cyan-700
-        prose-a:no-underline
-        hover:prose-a:underline
-
-        prose-hr:my-12
-      "
-    >
+    <article className="max-w-none text-slate-700">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
+        components={{
+          h1: ({ children }) => (
+            <h1 className="mb-6 mt-12 text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
+              {children}
+            </h1>
+          ),
+
+          h2: ({ children }) => (
+            <h2 className="mb-5 mt-12 border-l-4 border-cyan-600 pl-4 text-2xl font-bold leading-tight text-slate-900 md:text-3xl">
+              {children}
+            </h2>
+          ),
+
+          h3: ({ children }) => (
+            <h3 className="mb-4 mt-10 text-xl font-bold leading-tight text-slate-900 md:text-2xl">
+              {children}
+            </h3>
+          ),
+
+          p: ({ children }) => (
+            <p className="mb-6 text-lg leading-8 text-slate-700">
+              {children}
+            </p>
+          ),
+
+          ol: ({ children }) => (
+            <ol className="mb-8 ml-7 list-decimal space-y-3 text-lg leading-8 text-slate-700">
+              {children}
+            </ol>
+          ),
+
+          ul: ({ children }) => (
+            <ul className="mb-8 ml-7 list-disc space-y-3 text-lg leading-8 text-slate-700">
+              {children}
+            </ul>
+          ),
+
+          li: ({ children }) => (
+            <li className="pl-1">
+              {children}
+            </li>
+          ),
+
+          strong: ({ children }) => (
+            <strong className="font-bold text-slate-900">
+              {children}
+            </strong>
+          ),
+
+          blockquote: ({ children }) => (
+            <blockquote className="my-8 border-l-4 border-cyan-600 bg-slate-50 px-6 py-4 italic text-slate-700">
+              {children}
+            </blockquote>
+          ),
+
+          a: ({ href, children }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-cyan-700 underline decoration-cyan-300 underline-offset-2"
+            >
+              {children}
+            </a>
+          ),
+
+          img: ({ src, alt }) => (
+            <img
+              src={src}
+              alt={alt ?? ""}
+              className="my-10 h-auto w-full rounded-2xl"
+            />
+          ),
+
+          hr: () => (
+            <hr className="my-10 border-slate-200" />
+          ),
+        }}
       >
         {content}
       </ReactMarkdown>

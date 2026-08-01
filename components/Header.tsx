@@ -29,7 +29,7 @@ export default function Header() {
           </div>
         </Link>
 
-<nav className="hidden items-center gap-10 text-sm font-semibold md:flex">
+<nav className="hidden items-center gap-8 text-sm font-semibold md:flex">
   <Link
     href="/"
     className="transition hover:text-cyan-600"
@@ -49,6 +49,34 @@ export default function Header() {
     className="transition hover:text-cyan-600"
   >
     Contato
+  </Link>
+
+  <Link
+    href="/busca"
+    className="
+      flex items-center gap-2
+      rounded-lg
+      bg-slate-900
+      px-4 py-2.5
+      text-sm font-bold
+      text-white
+      transition
+      hover:bg-cyan-600
+    "
+  >
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+
+    Buscar
   </Link>
 </nav>
       </div>
