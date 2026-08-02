@@ -34,39 +34,39 @@ export default function NewsForm({
 
   const [loading, setLoading] = useState(false);
 
-const [formData, setFormData] = useState<NewsFormData>({
-  title: news?.title ?? "",
-  excerpt: news?.excerpt ?? "",
-  content: news?.content ?? "",
-  category_id: news?.category_id ?? null,
-  featured: news?.featured ?? false,
-  featured_order: news?.featured_order ?? 0,
-  featured_image: news?.featured_image ?? "",
-  author: news?.author ?? "",
-});
+  const [formData, setFormData] = useState<NewsFormData>({
+    title: news?.title ?? "",
+    excerpt: news?.excerpt ?? "",
+    content: news?.content ?? "",
+    category_id: news?.category_id ?? null,
+    featured: news?.featured ?? false,
+    featured_order: news?.featured_order ?? 0,
+    featured_image: news?.featured_image ?? "",
+    author: news?.author ?? "",
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-if (news?.id) {
+    if (news?.id) {
+      await updateNews(news.id, formData);
+    } else {
+      const created = await createNews(formData);
 
-} else {
-        const created = await createNews(formData);
-
-        router.push(`/admin/news/${created.id}`);
-        return;
-      }
-
-      router.refresh();
-} catch (error) {
-  console.error("ERRO:", error);
-} finally {
-      setLoading(false);
+      router.push(`/admin/news/${created.id}`);
+      return;
     }
+
+    router.refresh();
+  } catch (error) {
+    console.error("ERRO AO SALVAR:", error);
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <form onSubmit={handleSubmit}>
@@ -83,13 +83,13 @@ if (news?.id) {
           />
         </div>
 
-<NewsSidebar
-  categories={categories}
-  teamMembers={teamMembers}
-  formData={formData}
-  setFormData={setFormData}
-  loading={loading}
-/>
+        <NewsSidebar
+          categories={categories}
+          teamMembers={teamMembers}
+          formData={formData}
+          setFormData={setFormData}
+          loading={loading}
+        />
       </div>
     </form>
   );

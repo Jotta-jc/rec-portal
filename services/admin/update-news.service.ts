@@ -23,11 +23,11 @@ export async function updateNews(id: number, values: any) {
     if (clearError) throw clearError;
   }
 
-const { error } = await supabase
-  .from("news")
-  .update(payload)
-  .eq("id", id)
-  .select();
+  const { error } = await supabase
+    .from("news")
+    .update(payload)
+    .eq("id", id)
+    .select();
 
-if (error) throw error;
+  if (error) throw error;
 }
