@@ -1,4 +1,7 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
+
 
 import AdminTable from "@/components/admin/AdminTable";
 import NewsTable from "@/components/admin/NewsTable";
