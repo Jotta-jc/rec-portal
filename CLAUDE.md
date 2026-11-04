@@ -33,6 +33,7 @@ Este PC também roda o JC Experiência, que usa os mesmos serviços (Supabase, V
 10. Mudanças no banco: inspecionar schema/RLS → avaliar impacto → migração versionada → backup → autorização.
 11. Frontend: alterações pontuais, reutilizar componentes, validar desktop e mobile.
 12. Documentar toda alteração (arquivos modificados e motivo).
+13. SQL: nunca execute SQL no banco. Sempre entregue cada consulta em um bloco separado e numerado, pronto para o responsável copiar e rodar no SQL Editor do Supabase do REC. Identifique no início de cada bloco se ele é SOMENTE LEITURA ou se ALTERA DADOS. Consultas que alteram dados exigem backup e autorização explícita.
 
 ## Correções já feitas — preservar
 - `/admin/news/page.tsx`: `export const dynamic = "force-dynamic";`
@@ -49,3 +50,4 @@ Este PC também roda o JC Experiência, que usa os mesmos serviços (Supabase, V
 - Para cada tarefa: objetivo, plano, arquivos envolvidos, impacto, prioridade, resultado esperado.
 - Idioma: português do Brasil.
 - Marcos do diário: v0.1 Arquitetura validada → v1.0 Portal consolidado (ver documento completo).
+- Diretrizes editoriais: ver Padrao_Editorial_REC.txt na raiz.

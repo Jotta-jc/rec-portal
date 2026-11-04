@@ -14,7 +14,7 @@
 
 
 -- ---------------------------------------------------------------------
--- 01. Tabelas e views do schema public (com RLS ativo ou não)
+-- 01. [SOMENTE LEITURA] Tabelas e views do schema public (com RLS ativo ou não)
 -- ---------------------------------------------------------------------
 SELECT
   c.relname                      AS tabela,
@@ -31,7 +31,7 @@ ORDER BY c.relname;
 
 
 -- ---------------------------------------------------------------------
--- 02. Colunas (tipo, nulidade, default) de todas as tabelas public
+-- 02. [SOMENTE LEITURA] Colunas (tipo, nulidade, default) de todas as tabelas public
 --     Obs.: o default revela se o slug/published_at/read_time é gerado.
 -- ---------------------------------------------------------------------
 SELECT
@@ -50,7 +50,7 @@ ORDER BY table_name, ordinal_position;
 
 
 -- ---------------------------------------------------------------------
--- 03. Constraints (PK, FK, UNIQUE, CHECK, EXCLUDE) com definição completa
+-- 03. [SOMENTE LEITURA] Constraints (PK, FK, UNIQUE, CHECK, EXCLUDE) com definição completa
 --     Importante: mostra a definição real de news_featured_order_unique.
 -- ---------------------------------------------------------------------
 SELECT
@@ -69,7 +69,7 @@ ORDER BY rel.relname, con.contype, con.conname;
 
 
 -- ---------------------------------------------------------------------
--- 04. Índices (inclui índices UNIQUE parciais, ex.: WHERE featured = true)
+-- 04. [SOMENTE LEITURA] Índices (inclui índices UNIQUE parciais, ex.: WHERE featured = true)
 -- ---------------------------------------------------------------------
 SELECT
   tablename,
@@ -81,7 +81,7 @@ ORDER BY tablename, indexname;
 
 
 -- ---------------------------------------------------------------------
--- 05. Triggers nas tabelas public (ex.: geração de slug, updated_at)
+-- 05. [SOMENTE LEITURA] Triggers nas tabelas public (ex.: geração de slug, updated_at)
 -- ---------------------------------------------------------------------
 SELECT
   c.relname                     AS tabela,
@@ -100,7 +100,7 @@ ORDER BY c.relname, t.tgname;
 
 
 -- ---------------------------------------------------------------------
--- 06. Funções do schema public (código-fonte — ex.: gerador de slug)
+-- 06. [SOMENTE LEITURA] Funções do schema public (código-fonte — ex.: gerador de slug)
 -- ---------------------------------------------------------------------
 SELECT
   p.proname                              AS funcao,
@@ -118,7 +118,7 @@ ORDER BY p.proname;
 
 
 -- ---------------------------------------------------------------------
--- 07. Políticas RLS das tabelas public
+-- 07. [SOMENTE LEITURA] Políticas RLS das tabelas public
 -- ---------------------------------------------------------------------
 SELECT
   tablename,
@@ -134,7 +134,7 @@ ORDER BY tablename, cmd, policyname;
 
 
 -- ---------------------------------------------------------------------
--- 08. Privilégios (GRANTs) de anon / authenticated nas tabelas public
+-- 08. [SOMENTE LEITURA] Privilégios (GRANTs) de anon / authenticated nas tabelas public
 -- ---------------------------------------------------------------------
 SELECT
   table_name,
@@ -148,7 +148,7 @@ ORDER BY table_name, grantee;
 
 
 -- ---------------------------------------------------------------------
--- 09. Buckets do Storage
+-- 09. [SOMENTE LEITURA] Buckets do Storage
 -- ---------------------------------------------------------------------
 SELECT
   id,
@@ -162,7 +162,7 @@ ORDER BY name;
 
 
 -- ---------------------------------------------------------------------
--- 10. Políticas RLS do Storage (storage.objects)
+-- 10. [SOMENTE LEITURA] Políticas RLS do Storage (storage.objects)
 -- ---------------------------------------------------------------------
 SELECT
   policyname,
@@ -178,7 +178,7 @@ ORDER BY cmd, policyname;
 
 
 -- ---------------------------------------------------------------------
--- 11. Volume de objetos por bucket e pasta de primeiro nível
+-- 11. [SOMENTE LEITURA] Volume de objetos por bucket e pasta de primeiro nível
 -- ---------------------------------------------------------------------
 SELECT
   bucket_id,
@@ -191,7 +191,7 @@ ORDER BY bucket_id, pasta;
 
 
 -- ---------------------------------------------------------------------
--- 12. Distribuição de destaques em news (valida a lógica de featured_order)
+-- 12. [SOMENTE LEITURA] Distribuição de destaques em news (valida a lógica de featured_order)
 -- ---------------------------------------------------------------------
 SELECT
   featured,
@@ -203,7 +203,7 @@ ORDER BY featured, featured_order NULLS FIRST;
 
 
 -- ---------------------------------------------------------------------
--- 13. Integridade básica de news (slugs duplicados, FKs órfãs, campos vazios)
+-- 13. [SOMENTE LEITURA] Integridade básica de news (slugs duplicados, FKs órfãs, campos vazios)
 -- ---------------------------------------------------------------------
 SELECT 'slugs duplicados' AS verificacao, count(*) AS qtd
 FROM (SELECT slug FROM public.news GROUP BY slug HAVING count(*) > 1) s
@@ -226,7 +226,7 @@ FROM public.news WHERE coalesce(meta_description, '') = '';
 
 
 -- ---------------------------------------------------------------------
--- 14. Tabelas fora do public que possam conter "images" (a tabela
+-- 14. [SOMENTE LEITURA] Tabelas fora do public que possam conter "images" (a tabela
 --     public.images citada nas orientações não foi encontrada via API)
 -- ---------------------------------------------------------------------
 SELECT table_schema, table_name, table_type
@@ -237,7 +237,7 @@ ORDER BY table_schema, table_name;
 
 
 -- ---------------------------------------------------------------------
--- 15. Extensões instaladas
+-- 15. [SOMENTE LEITURA] Extensões instaladas
 -- ---------------------------------------------------------------------
 SELECT extname, extversion
 FROM pg_extension

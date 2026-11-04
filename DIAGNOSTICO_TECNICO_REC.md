@@ -17,7 +17,8 @@ O portal está funcional e **compila sem erros** (Next.js 16.2.11 / Turbopack / 
 
 Pontos mais críticos:
 
-1. **Destaques (`featured_order`)** — o update grava `0` em vez de `null`, e a criação não libera posição ocupada. A definição real da constraint `news_featured_order_unique` precisa ser confirmada (há 11 registros com `0` coexistindo, o que indica constraint parcial).
+1. **Destaques (`featured_order`)** — a criação não libera posição ocupada (falha com `23505`, confirmado pelo índice único parcial `WHERE featured = true`), e o update grava `0` em vez de `null` (inconsistência de dados).
+2. **Triggers de slug duplicados rodando em UPDATE** — `set_slug()` sobrescreve o slug em todo update: corrigir um título muda a URL pública, e notícias com slug fora do padrão mudam de URL no primeiro salvamento (P24).
 2. **`/admin/news/new` é estática** — categorias e autores ficam congelados no momento do build.
 3. **Rotas admin inexistentes** — `/admin/categories`, `/admin/team`, `/admin/comments` levam a 404.
 4. **Notícia/categoria inexistente gera erro 500** em vez de 404.
@@ -246,18 +247,70 @@ Categorias (slugs): fundamentos, organizacao, lideranca, mercado, processos, fin
 - 1 notícia com `is_breaking = true` (coluna não usada pelo código).
 - Listagem de buckets via anon retorna lista vazia (esperado — precisa de SQL).
 
-**Conclusão importante:** como 11 linhas com `featured_order = 0` coexistem, a constraint `news_featured_order_unique` **não é um UNIQUE simples** sobre `featured_order`. Provavelmente é parcial (ex.: `WHERE featured = true`) ou composta. Isso muda a gravidade do problema P1 — ver seção 11.
+**Conclusão:** como 11 linhas com `featured_order = 0` coexistem, `news_featured_order_unique` não poderia ser um UNIQUE simples. **Confirmado pelo SQL (seção 9.3): é um índice único parcial `WHERE featured = true`.**
 
 ### 9.2 Deduzido do código
 
 - `news.category_id` → FK para `categories.id` (join `categories(name, slug)`).
 - `news.author` é **texto** (nome), não FK para `team_members`.
-- `createNews` **não envia `slug`** nem `published_at` → devem ser gerados no banco (default/trigger). A confirmar.
+- `createNews` **não envia `slug`** nem `published_at` → `slug` é gerado por trigger (confirmado na seção 9.3); `published_at` a confirmar (bloco 02).
 - `read_time` é texto (`"N min"`), calculado no app a 200 palavras/min.
 
-### 9.3 Pendente — via `docs/sql/inspecao_schema.sql`
+### 9.3 Confirmado via SQL (blocos 03, 04 e 05 — rodados pelo responsável em 2026-11-03)
 
-Constraints (definição real de `news_featured_order_unique`), índices, triggers e funções (geração de slug), políticas RLS, GRANTs de anon/authenticated, buckets e políticas do Storage, integridade (slugs duplicados, autores órfãos), localização da tabela `images`.
+**Constraints de `news`:**
+
+| Constraint | Tipo | Definição |
+|---|---|---|
+| `news_pkey` | PRIMARY KEY | `(id)` |
+| `news_slug_key` | UNIQUE | `(slug)` |
+| `news_category_id_fkey` | FOREIGN KEY | `category_id → categories.id` |
+
+**Índice de destaque:**
+
+```sql
+CREATE UNIQUE INDEX news_featured_order_unique ON public.news (featured_order) WHERE (featured = true);
+```
+
+- É um **índice único parcial**, não uma constraint de tabela: só vale para notícias com `featured = true`.
+- As 12 notícias com `featured = false` e `featured_order = 0` **não conflitam** entre si.
+- Duas notícias com `featured = true` na mesma posição **conflitam** (`23505`). Isso confirma o P2.
+
+**Triggers em `news`:**
+
+| Trigger | Momento | Função |
+|---|---|---|
+| `trg_generate_slug` | BEFORE INSERT OR UPDATE | `auto_generate_slug()` |
+| `trigger_set_slug` | BEFORE INSERT OR UPDATE | `set_slug()` |
+| `trigger_generate_meta_description` | BEFORE INSERT OR UPDATE OF title, excerpt, content | `generate_meta_description()` |
+
+- Coluna `slug`: **NOT NULL, sem default**. O valor vem só dos triggers.
+- **Dois triggers de slug** rodam no mesmo evento (ver P24). No Postgres, triggers do mesmo momento executam em ordem alfabética de nome: `trg_generate_slug` antes de `trigger_set_slug`.
+- `UPDATE OF title, excerpt, content` dispara sempre que essas colunas estão no `SET` do update, **mesmo com valor igual**. O formulário do admin envia as três em todo salvamento.
+- Destaques conferem com o ponto de restauração da seção 17.1 (71 / 67 / 66).
+
+**Funções dos triggers** (bloco 06, conferido pelo responsável em 2026-11-03):
+
+| Função | Trigger | Comportamento |
+|---|---|---|
+| `auto_generate_slug()` | `trg_generate_slug` (roda 1º) | `IF NEW.slug IS NULL OR NEW.slug = '' THEN NEW.slug := generate_slug(NEW.title)`. Não olha `TG_OP` nem `OLD`. |
+| `set_slug()` | `trigger_set_slug` (roda 2º) | `NEW.slug := public.generate_slug(NEW.title)`. **Sem condição**: sobrescreve sempre, em INSERT e em todo UPDATE. Sem sufixo, sem comparar com `OLD.title`. |
+| `generate_meta_description()` | `trigger_generate_meta_description` | Só preenche se `meta_description` for NULL ou tiver menos de 30 caracteres: `left(regexp_replace(coalesce(excerpt, content, title), '<[^>]*>', '', 'g'), 160)`. **Não sobrescreve** conteúdo existente. |
+| `generate_slug(input)` | (auxiliar) | `lower` → `translate('áàãâäéèêëíìîïóòõôöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn')` → `regexp_replace('[^a-z0-9]+', '-')` → remove hífens duplicados → `trim '-'`. **Determinística, sem sufixo, sem deduplicação.** |
+
+**Efeito prático:**
+
+- Como `set_slug()` roda depois e sempre sobrescreve, `auto_generate_slug()` é **redundante**. O slug efetivo é sempre `generate_slug(title)`.
+- Salvar uma notícia **sem mudar o título** mantém o slug, **exceto** quando o slug atual já é diferente de `generate_slug(title)`. Isso acontece, por exemplo, com slug editado à mão, importado ou gerado por regra antiga. Essas notícias **mudam de URL no primeiro UPDATE de qualquer tipo**.
+- **Corrigir o título** de uma notícia publicada **sempre muda a URL**.
+- **Dois títulos iguais** (ou que viram o mesmo slug) geram `23505` em `news_slug_key`.
+
+### 9.4 Ainda pendente — via `docs/sql/inspecao_schema.sql`
+
+- ~~Comparação `slug` × `generate_slug(title)`~~ ✅ Concluída (2026-11-03): **0 divergências e 0 colisões**. Nenhum UPDATE sem mudança de título altera URL hoje.
+- Políticas RLS e GRANTs (blocos 07 e 08).
+- Buckets e políticas do Storage (blocos 09 a 11).
+- Integridade (bloco 13), tabela `images` (bloco 14) e colunas e defaults completos, inclusive `published_at` (bloco 02).
 
 ---
 
@@ -302,8 +355,8 @@ Severidade: 🔴 Alta · 🟠 Média · 🟡 Baixa
 
 | # | Sev. | Arquivo:linha | Problema | Impacto |
 |---|---|---|---|---|
-| P1 | 🔴 | `services/admin/update-news.service.ts:18` · `components/admin/news/NewsForm.tsx:43` · `components/admin/news/sections/NewsSidebar.tsx:115` | Update grava `featured_order: 0` (ao liberar a posição de outra notícia e quando "Nenhum" é escolhido), enquanto a criação usa `null`. | Dois estados para "sem destaque" (`0` e `null`) — já há 11 registros com `0`. Se a constraint for UNIQUE simples ou incluir linhas não destacadas, o update falha com `23505`. Gravidade final depende da definição real da constraint (SQL bloco 03/04). |
-| P2 | 🔴 | `services/admin/create-news.service.ts:22-31` | Criar notícia numa posição de destaque já ocupada não libera a posição anterior. | Com constraint parcial em `featured = true`, a criação falha com `23505`; sem constraint, surgiriam duas notícias na mesma posição. |
+| P1 | 🟠 | `services/admin/update-news.service.ts:18` · `components/admin/news/NewsForm.tsx:43` · `components/admin/news/sections/NewsSidebar.tsx:115` | **Inconsistência de dados:** o update grava `featured_order: 0` (ao liberar a posição de outra notícia e quando "Nenhum" é escolhido), enquanto a criação usa `null`. | Dois estados para "sem destaque" (`0` e `null`); há 12 registros com `0`. **Não causa `23505`**, porque o índice único é parcial (`WHERE featured = true`, seção 9.3). Correção para `null` mantida (Sprint 0.5); normalização dos registros existentes fica para migração futura. |
+| P2 | 🔴 | `services/admin/create-news.service.ts:22-31` | Criar notícia numa posição de destaque já ocupada não libera a posição anterior. | **Confirmado:** a criação falha com `23505 — news_featured_order_unique` (índice único parcial em `featured = true`). |
 | P3 | 🔴 | `app/admin/news/new/page.tsx:6` | Página prerenderizada no build (○): categorias e autores congelados. | Categoria/autor novos não aparecem no formulário de criação até o próximo deploy. |
 | P4 | 🟠 | `components/admin/AdminSidebar.tsx:17,21,25` | Links para `/admin/categories`, `/admin/team`, `/admin/comments` sem rota. | 404 no painel; gestão de categorias/autores/comentários inexistente. |
 | P5 | 🟠 | `services/news.service.ts:45` · `services/category.service.ts:19` | `.single()` lança erro quando o slug não existe; o `if (!news)` (`app/noticia/[slug]/page.tsx:30,64`) e `if (!category)` (`app/categoria/[slug]/page.tsx:32,56`) nunca é alcançado. | URL inválida/antiga retorna **500** em vez de 404 (ruim para SEO e usuário). `slug_redirects` não é consultado. |
@@ -325,6 +378,9 @@ Severidade: 🔴 Alta · 🟠 Média · 🟡 Baixa
 | P21 | 🟡 | `package.json:14,15,24` | `csv-parser`, `dotenv`, `tsx` em `dependencies` sem uso no app. | Dependências desnecessárias em produção (provável resto de script de importação). |
 | P22 | 🟡 | `README.md` | README padrão do create-next-app. | Sem documentação de setup. |
 | P23 | 🟡 | `services/news.service.ts:52` · `app/noticia/[slug]/page.tsx` | `getRelatedNews` com `category_id` nulo; `getNewsBySlug` usa `featured_image` sem fallback. | Possível erro em notícia sem categoria ou imagem. |
+| P24 | 🔴 | Banco: triggers `trg_generate_slug` → `auto_generate_slug()` e `trigger_set_slug` → `set_slug()` em `news` (seção 9.3) | **Dois triggers de slug duplicados**, ambos `BEFORE INSERT OR UPDATE`. `set_slug()` roda por último e **sempre** sobrescreve o slug com `generate_slug(title)`, em todo UPDATE. Isso inclui um update que só muda o destaque e o `releaseFeaturedPosition`, que atualiza **outra** notícia. `auto_generate_slug()` fica redundante. | (a) **Corrigir o título muda a URL pública.** (b) Notícias com slug ≠ `generate_slug(title)` **mudam de URL no primeiro salvamento**, mesmo sem mudar o título, e até quando são só deslocadas de um destaque. Links compartilhados e indexados quebram (e hoje viram erro 500, P5). A `slug_redirects` não é usada pelo código, então não cobre isso. **Risco latente, sem impacto atual nos dados:** a comparação slug × `generate_slug(title)` (2026-11-03) retornou **0 linhas**. Todos os slugs já estão no padrão, então o caso (b) não ocorre hoje. O caso (a) continua valendo para qualquer correção de título. |
+| P25 | 🟡 informativo | Banco: trigger `trigger_generate_meta_description` → `generate_meta_description()` | Dispara em `UPDATE OF title, excerpt, content` (o admin envia essas colunas em todo salvamento), mas só preenche quando `meta_description` é NULL ou tem menos de 30 caracteres. | Não sobrescreve conteúdo existente. Ponto de atenção: meta descriptions com menos de 30 caracteres são substituídas automaticamente. |
+| P26 | 🟠 | Banco: `generate_slug()` + `news_slug_key` · `components/admin/news/NewsForm.tsx:65` | `generate_slug()` não deduplica nem acrescenta sufixo. Dois títulos que geram o mesmo slug violam o `UNIQUE (slug)`. | Criar ou renomear uma notícia com título igual ao de outra falha com `23505` em `news_slug_key`. O erro aparece só no console (P6), então o editor não sabe por que não salvou. **Risco latente, sem impacto atual nos dados:** a verificação de colisões (2026-11-03) retornou **0 linhas**. |
 
 ---
 
@@ -332,7 +388,10 @@ Severidade: 🔴 Alta · 🟠 Média · 🟡 Baixa
 
 | Pendência | Responsável | Como |
 |---|---|---|
-| Definição de constraints, índices, triggers (geração de slug), RLS, GRANTs | Responsável do projeto | Rodar `docs/sql/inspecao_schema.sql` no SQL Editor do Supabase **do REC** e devolver resultados |
+| ~~Constraints, índices e triggers~~ | Responsável do projeto | ✅ Concluído (blocos 03 a 05, seção 9.3) |
+| ~~Código das funções `auto_generate_slug`, `set_slug`, `generate_meta_description`, `generate_slug`~~ | Responsável do projeto | ✅ Concluído (seção 9.3) |
+| ~~Comparação `slug` × `generate_slug(title)` (P24, P26)~~ | Responsável do projeto | ✅ Concluído: 0 divergências, 0 colisões |
+| RLS e GRANTs | Responsável do projeto | Blocos 07 e 08 no SQL Editor do Supabase **do REC** |
 | Buckets e políticas do Storage (`rec imagens`) | Responsável do projeto | Mesmo arquivo, blocos 09–11 |
 | Localização da tabela `images` (não existe em `public`) | Responsável do projeto | Bloco 14 |
 | `comments` e `slug_redirects` vazias ou ocultas por RLS | — | Blocos 01, 07 e 12 |
@@ -345,12 +404,13 @@ Severidade: 🔴 Alta · 🟠 Média · 🟡 Baixa
 
 ## 13. Recomendações (priorizadas)
 
-1. **Sprint 0.5 — bugs críticos do admin (P1, P2, P3).** Pequena, isolada, sem mudança de schema. Executar só depois da inspeção SQL confirmar a constraint.
-2. **Sprint 0.6 — robustez pública (P5, P6, P18, P23).** 404 correto, uso de `slug_redirects`, aviso de erro no admin, busca segura.
-3. **SEO técnico (P8, P9, P10, P15, P16)** — pode entrar na Sprint 4 ou antes, por ser barato e de alto impacto na indexação.
-4. **Admin (P4, P7, P11, P12, P13)** — rotas de categorias/autores/comentários, dashboard real, layout do admin separado (route groups), padronizar cliente server com sessão.
-5. **Higiene (P14, P17, P19–P22)** — migrar para `proxy`, sanitizar HTML, tipagem, remover arquivos vazios/deps, `.env.example`, README.
-6. Normalizar dados de destaque (`0` → `null`) **somente** com migração versionada, backup e autorização (regra 10).
+1. **Sprint 0.5 — bugs críticos do admin (P1, P2, P3).** Pequena, isolada, sem mudança de schema. Constraint confirmada (seção 9.3). Testes só depois da análise das funções de slug (P24).
+2. **Triggers de slug (P24, P26).** Manter um único trigger de slug, com o comportamento do `auto_generate_slug()` (só gera quando o slug está vazio), e remover o `set_slug()`. Considerar sufixo de deduplicação no INSERT. Mudança de URL só de forma explícita, sempre com um registro em `slug_redirects` consultado pela página da notícia. Qualquer mudança no banco segue a regra 10 (migração versionada, backup, autorização) e a regra 13 (SQL entregue em blocos rotulados, executado pelo responsável).
+3. **Sprint 0.6 — robustez pública (P5, P6, P18, P23).** 404 correto, uso de `slug_redirects`, aviso de erro no admin, busca segura.
+4. **SEO técnico (P8, P9, P10, P15, P16)** — pode entrar na Sprint 4 ou antes, por ser barato e de alto impacto na indexação.
+5. **Admin (P4, P7, P11, P12, P13)** — rotas de categorias/autores/comentários, dashboard real, layout do admin separado (route groups), padronizar cliente server com sessão.
+6. **Higiene (P14, P17, P19–P22)** — migrar para `proxy`, sanitizar HTML, tipagem, remover arquivos vazios/deps, `.env.example`, README.
+7. Normalizar dados de destaque (`0` → `null`) **somente** com migração versionada, backup e autorização (regra 10).
 
 ---
 
@@ -404,3 +464,55 @@ Correções já feitas e que devem ser preservadas em qualquer alteração futur
 |---|---|
 | `DIAGNOSTICO_TECNICO_REC.md` | Entrega obrigatória da Sprint 0. |
 | `docs/sql/inspecao_schema.sql` | Consultas somente leitura para inspeção de schema, RLS, constraints, triggers e Storage. |
+
+---
+
+## 17. Sprint 0.5 — Bugs críticos do admin (validada em 2026-11-03)
+
+### 17.1 Ponto de restauração dos destaques
+
+Consulta somente leitura (anon key) em **2026-11-03 22:16 (BRT)**, antes de qualquer alteração de código:
+
+| Posição | Rótulo | id | Título | featured | featured_order |
+|---|---|---|---|---|---|
+| 1 | Hero | 71 | Vendas online: como transformar a internet em uma fonte de renda e criar oportunidades de negócio | true | 1 |
+| 2 | Destaque 1 | 67 | Quando estudar e aprender na prática se tornam parte da mesma estratégia | true | 2 |
+| 3 | Destaque 2 | 66 | Autoliderança: antes de cuidar da empresa, pergunte quem está cuidando de você | true | 3 |
+
+Estado geral nesse momento: **43 notícias** — 28 com `featured_order = null`, **12 com `featured_order = 0`** (ids 33, 34, 35, 42, 53, 58, 63, 64, 65, 68, 69, 70; todas `featured = false`) e 3 destaques.
+
+> Diferença em relação à seção 9.1 (42 notícias / 11 com `0`): a notícia **id 71** foi criada em 2026-11-03 às 22:14 (BRT) e colocada como Hero; a notícia que ocupava o Hero foi liberada pelo update antigo com `featured_order = 0` — exatamente o comportamento do problema P1. Os registros com `0` **não foram alterados** (migração futura, com backup e autorização).
+
+### 17.2 Arquivos alterados
+
+| Arquivo | Alteração | Motivo |
+|---|---|---|
+| `services/admin/featured-position.ts` (novo) | `normalizeFeatured()` (0/vazio → `null`; `featured` derivado da posição) e `releaseFeaturedPosition()` (libera a posição gravando `featured: false, featured_order: null`). | Regra única de destaque para criação e atualização, sem duplicar lógica. |
+| `services/admin/create-news.service.ts` | Usa `normalizeFeatured` (mesmo resultado da regra anterior) e chama `releaseFeaturedPosition` antes do insert. | P2 — criação em posição ocupada. Preserva `null`, `read_time` e log detalhado. |
+| `services/admin/update-news.service.ts` | Usa `normalizeFeatured`; liberação grava `null` em vez de `0`. | P1 — fim do `featured_order: 0` no update. Preserva a lógica de liberação. |
+| `app/admin/news/new/page.tsx` | `export const dynamic = "force-dynamic";` | P3 — categorias e autores sempre atualizados (rota passou de ○ para ƒ). |
+
+Build: `npm run build` ✅ — `/admin/news/new` agora **ƒ**. Sem mudança de schema ou dados.
+
+Reclassificação após o SQL (seção 9.3): **P1 passa a "inconsistência de dados"**, porque o índice único é parcial (`WHERE featured = true`) e o `0` com `featured = false` não gera conflito. A correção para `null` foi mantida. **P2 está confirmado** como causa de `23505`.
+
+Testes liberados (2026-11-03): a comparação slug × `generate_slug(title)` retornou 0 divergências, inclusive para 71, 67 e 66. Os UPDATEs dos testes (deslocamento e restauração) não alteram URLs, **desde que nenhum título de notícia real seja modificado**.
+
+### 17.3 Resultado dos testes manuais
+
+Executados pelo responsável em 2026-11-03, em `localhost` contra o banco de produção, sem alterar títulos de notícias reais.
+
+| Passo | Verificação | Resultado |
+|---|---|---|
+| 1 | `/admin/news/new` carrega categorias e autores atualizados (P3) | ✅ OK |
+| 2 | Criação de "[TESTE] Sprint 0.5" direto em Destaque 2, posição ocupada pela 66 (P2) | ✅ OK, sem `23505`; a 66 foi liberada com `NULL` |
+| 3 | TESTE → Destaque 1 (liberação da 67) | ✅ OK |
+| 4 | TESTE → Hero (liberação da 71) | ✅ OK |
+| 5 | TESTE → Nenhum, gravado como `featured_order = NULL` (P1) | ✅ OK |
+| 6 | Restauração: 71 Hero, 67 Destaque 1, 66 Destaque 2 | ✅ OK, confere com o ponto de restauração (17.1) |
+| 7 | `featured_order = 0` continua com 12 registros, sem nenhum `0` novo | ✅ OK |
+| 8 | Remoção da notícia de teste (**id 72**): linha em `news` e imagem no Storage, pelo painel do Supabase | ✅ OK |
+
+Nenhum erro no console. Sprint 0.5 **validada**.
+
+Risco conhecido: liberar a posição e gravar a notícia são duas operações separadas (não transacionais), como já era no update. Solução definitiva (RPC transacional) depende de migração — fica para sprint futura.
