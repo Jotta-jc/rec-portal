@@ -13,7 +13,7 @@
 
 ## 1. Resumo executivo
 
-O portal está funcional e **compila sem erros** (Next.js 16.2.11 / Turbopack / TypeScript). O portal público (home, notícia, categoria, busca, páginas institucionais) e o CRUD de notícias no admin funcionam com dados reais do Supabase. As conexões (Git, Supabase) foram confirmadas como sendo do **REC**, separadas do JC Experiência. A Vercel não pôde ser verificada localmente.
+O portal está funcional e **compila sem erros** (Next.js 16.2.11 / Turbopack / TypeScript). O portal público (home, notícia, categoria, busca, páginas institucionais) e o CRUD de notícias no admin funcionam com dados reais do Supabase. As conexões (Git, Supabase, Vercel) foram confirmadas como sendo do **REC**, separadas do JC Experiência. A Vercel foi conferida no painel pelo responsável (seção 7.1).
 
 Pontos mais críticos:
 
@@ -38,7 +38,7 @@ Pontos mais críticos:
 | Markdown | `react-markdown` + `remark-gfm` + `rehype-raw` | `^10.1.0` |
 | Ícones | `lucide-react`, `react-icons` | — |
 | Lint | ESLint 9 + `eslint-config-next` | — |
-| Hospedagem | Vercel | não verificada localmente |
+| Hospedagem | Vercel | projeto `rec-portal`, conferido no painel (seção 7.1) |
 | DNS / Domínio / E-mail | Cloudflare / Locaweb / Hostinger | conforme orientações (não alterado) |
 
 ### Fluxo de dados
@@ -193,11 +193,26 @@ Resultado do `npm run build` (ƒ = dinâmica, ○ = estática):
 |---|---|---|---|
 | Git remoto | `github.com/Jotta-jc/rec-portal` (branch `main`, sincronizada com `origin/main`) | `github.com/Jotta-jc/jc-experiencia` | ✅ distinto |
 | Supabase (ref) | `donnde…wtul` — idêntico em `.env.local` e `next.config.ts` | `easpag…mont` | ✅ distinto |
-| Vercel | sem `.vercel/` local, CLI não instalada | — | ⏳ **pendente** (conferência no painel pelo responsável) |
+| Vercel | projeto `rec-portal` (sem `.vercel/` local, CLI não instalada) | — | ✅ conferido no painel pelo responsável (seção 7.1) |
 | MCP (Supabase/Vercel) | nenhum servidor MCP configurado | — | ✅ sem risco de alvo cruzado |
 | Segredos no histórico Git | nenhum (`.env*` ignorado; único "match" era hash do `package-lock.json`) | — | ✅ |
 
-DNS/Cloudflare/Locaweb/Hostinger: não inspecionados nesta sprint (fora do repositório); sem alterações.
+DNS/Cloudflare/Locaweb/Hostinger: os registros não foram inspecionados diretamente (ficam fora do repositório) e nada foi alterado. A configuração DNS dos domínios do site foi validada pela Vercel ("Valid Configuration", seção 7.1).
+
+### 7.1 Vercel — domínios e deploy (conferido em 2026-11-03)
+
+Conferência feita pelo responsável no painel da Vercel (projeto `rec-portal` → Domains):
+
+| Domínio | Status | Função |
+|---|---|---|
+| `www.reccomunicacao.com.br` | ✅ Valid Configuration | **Domínio principal** de Production |
+| `reccomunicacao.com.br` | ✅ Valid Configuration | Redirect **308** → `www.reccomunicacao.com.br` |
+| `rec-portal-three.vercel.app` | ✅ Valid Configuration | Production (serve o mesmo conteúdo, ver P27) |
+
+- **Último deploy de Production:** commit `de7203c` (branch `main`), status **Ready**. Já contém as correções da Sprint 0.5.
+- O push de `de7203c` na `main` gerou o deploy de Production, o que indica deploy automático a partir da `main`.
+- **Domínio canônico do portal:** `https://www.reccomunicacao.com.br` (ver P16).
+- As variáveis de ambiente configuradas na Vercel não foram listadas nesta conferência.
 
 ---
 
@@ -210,7 +225,7 @@ DNS/Cloudflare/Locaweb/Hostinger: não inspecionados nesta sprint (fora do repos
 
 - Apenas `.env.local` existe; **não há `.env.example`**.
 - **Service role key não é usada** em nenhum ponto do código ✅.
-- Variáveis na Vercel: não verificadas (pendência).
+- Variáveis na Vercel: não listadas na conferência do painel. O deploy `de7203c` está Ready e o site funciona, o que indica que as duas variáveis estão configuradas.
 
 ---
 
@@ -370,7 +385,7 @@ Severidade: 🔴 Alta · 🟠 Média · 🟡 Baixa
 | P13 | 🟡 | `services/admin/team-members.service.ts:1` | Cliente de browser (`createBrowserClient`) chamado em Server Component. | Funciona, mas sem sessão e fora do padrão; mistura de responsabilidades. |
 | P14 | 🟡 | `middleware.ts:4` | Convenção `middleware` depreciada no Next 16 (aviso no build); nome novo é `proxy`. | Sem impacto imediato; quebra em versão futura. |
 | P15 | 🟡 | `app/layout.tsx:74` | `apple-touch-icon.png` referenciado mas inexistente em `public/`. | 404 em iOS / auditorias. |
-| P16 | 🟡 | `app/layout.tsx:8` | `metadataBase` sem `www`; domínio canônico a definir. | Possível divergência www × sem-www em OG/canonical. |
+| P16 | 🟠 | `app/layout.tsx:8,48` · `app/robots.ts:10` · `app/sitemap.ts:6,13,19` | `metadataBase`, `openGraph.url`, robots e sitemap usam `https://reccomunicacao.com.br`, **sem www**. O domínio canônico confirmado na Vercel é **`https://www.reccomunicacao.com.br`**, e o domínio sem www responde com redirect 308 (seção 7.1). | Canonical, Open Graph, sitemap e robots apontam para uma URL que redireciona. O Google pode ignorar o canonical ou gastar crawl em redirects, e as prévias de compartilhamento passam por um redirect. Correção: usar `https://www.reccomunicacao.com.br` nesses pontos (de preferência numa constante única). |
 | P17 | 🟡 | `components/news/MarkdownContent.tsx:16` · `components/admin/news/MarkdownPreview.tsx:16` | `rehype-raw` renderiza HTML bruto do conteúdo. | Risco de XSS se uma conta admin for comprometida ou conteúdo colado trouxer scripts. |
 | P18 | 🟡 | `services/news.service.ts:86` · `services/admin/news.service.ts:33` | Termo de busca interpolado no filtro `.or()` sem escapar `,` `(` `)`. | Buscas com esses caracteres quebram o filtro (erro 500 na busca). |
 | P19 | 🟡 | `services/admin/update-news.service.ts:4` · `components/admin/news/sections/*` | Uso de `any` em `values`, `formData`, `setFormData`. | Perde a proteção do TypeScript. |
@@ -381,6 +396,7 @@ Severidade: 🔴 Alta · 🟠 Média · 🟡 Baixa
 | P24 | 🔴 | Banco: triggers `trg_generate_slug` → `auto_generate_slug()` e `trigger_set_slug` → `set_slug()` em `news` (seção 9.3) | **Dois triggers de slug duplicados**, ambos `BEFORE INSERT OR UPDATE`. `set_slug()` roda por último e **sempre** sobrescreve o slug com `generate_slug(title)`, em todo UPDATE. Isso inclui um update que só muda o destaque e o `releaseFeaturedPosition`, que atualiza **outra** notícia. `auto_generate_slug()` fica redundante. | (a) **Corrigir o título muda a URL pública.** (b) Notícias com slug ≠ `generate_slug(title)` **mudam de URL no primeiro salvamento**, mesmo sem mudar o título, e até quando são só deslocadas de um destaque. Links compartilhados e indexados quebram (e hoje viram erro 500, P5). A `slug_redirects` não é usada pelo código, então não cobre isso. **Risco latente, sem impacto atual nos dados:** a comparação slug × `generate_slug(title)` (2026-11-03) retornou **0 linhas**. Todos os slugs já estão no padrão, então o caso (b) não ocorre hoje. O caso (a) continua valendo para qualquer correção de título. |
 | P25 | 🟡 informativo | Banco: trigger `trigger_generate_meta_description` → `generate_meta_description()` | Dispara em `UPDATE OF title, excerpt, content` (o admin envia essas colunas em todo salvamento), mas só preenche quando `meta_description` é NULL ou tem menos de 30 caracteres. | Não sobrescreve conteúdo existente. Ponto de atenção: meta descriptions com menos de 30 caracteres são substituídas automaticamente. |
 | P26 | 🟠 | Banco: `generate_slug()` + `news_slug_key` · `components/admin/news/NewsForm.tsx:65` | `generate_slug()` não deduplica nem acrescenta sufixo. Dois títulos que geram o mesmo slug violam o `UNIQUE (slug)`. | Criar ou renomear uma notícia com título igual ao de outra falha com `23505` em `news_slug_key`. O erro aparece só no console (P6), então o editor não sabe por que não salvou. **Risco latente, sem impacto atual nos dados:** a verificação de colisões (2026-11-03) retornou **0 linhas**. |
+| P27 | 🟡 | Vercel: domínio `rec-portal-three.vercel.app` (seção 7.1) | O domínio padrão da Vercel serve o portal em Production, com o mesmo conteúdo do `www`. | Conteúdo duplicado indexável fora do domínio oficial. Com o canonical correto (P8, P16), o impacto cai. Opção futura: redirecionar para `www.reccomunicacao.com.br` no painel da Vercel. Isso altera configuração de domínio e exige autorização (regra 6). |
 
 ---
 
@@ -395,8 +411,8 @@ Severidade: 🔴 Alta · 🟠 Média · 🟡 Baixa
 | Buckets e políticas do Storage (`rec imagens`) | Responsável do projeto | Mesmo arquivo, blocos 09–11 |
 | Localização da tabela `images` (não existe em `public`) | Responsável do projeto | Bloco 14 |
 | `comments` e `slug_redirects` vazias ou ocultas por RLS | — | Blocos 01, 07 e 12 |
-| Vercel: domínios `reccomunicacao.com.br` e `www`, deployment ativo, variáveis de ambiente | Responsável do projeto | Conferência no painel da Vercel |
-| DNS / Cloudflare | — | Fora do escopo; sem alterações |
+| ~~Vercel: domínios `reccomunicacao.com.br` e `www`, deployment ativo~~ | Responsável do projeto | ✅ Concluído (seção 7.1) |
+| ~~DNS / domínios~~ | Responsável do projeto | ✅ Validado pela Vercel ("Valid Configuration"); sem alterações |
 | Validação visual desktop/mobile | — | Sprint 2 |
 | Pendência conhecida (CLAUDE.md): criação com posição de destaque ocupada | — | Proposta Sprint 0.5 (P2) |
 
@@ -446,8 +462,8 @@ Correções já feitas e que devem ser preservadas em qualquer alteração futur
 - [ ] Conferir buckets do Storage (pendente — SQL)
 - [x] Conferir rotas públicas
 - [x] Conferir rotas administrativas
-- [ ] Conferir deploy na Vercel (pendente — painel)
-- [ ] Conferir domínio e DNS (fora do repositório)
+- [x] Conferir deploy na Vercel (painel, 2026-11-03: `de7203c` Ready)
+- [x] Conferir domínio e DNS (Valid Configuration na Vercel; canônico `www`)
 - [x] Verificar se o projeto compila (`npm run build` ✅, 1 aviso)
 
 ---
