@@ -1,0 +1,421 @@
+PADRÃO EDITORIAL REC
+
+MANUAL DE PRODUÇÃO DE CONTEÚDO
+
+==================================================
+
+1. ESTRUTURA EDITORIAL
+   ==================================================
+
+Todo artigo deve seguir esta estrutura:
+
+INTRODUÇÃO
+
+Utilizar 2 ou 3 parágrafos.
+
+Apresentar o tema, contextualizar o leitor e explicar por que o assunto importa.
+
+Evitar introduções genéricas.
+
+DESENVOLVIMENTO
+
+Utilizar subtítulos H2 e, quando necessário, H3.
+
+Os subtítulos devem representar ideias, argumentos, aprendizados ou análises.
+
+Evitar subtítulos genéricos como:
+
+O caso
+A empresa
+O resultado
+
+Preferir subtítulos que expressem o raciocínio editorial.
+
+APLICAÇÃO PRÁTICA
+
+Mostrar como empresas, líderes, gestores e profissionais podem aplicar o conhecimento.
+
+Sempre que possível, apresentar situações práticas, decisões, comportamentos, processos ou ações.
+
+A aplicação deve responder:
+
+"O que o leitor pode fazer com esse conhecimento?"
+
+CONCLUSÃO
+
+Reforçar o aprendizado e apresentar uma reflexão final.
+
+Sempre que pertinente, conectar estratégia, comportamento e resultado.
+
+Nunca terminar apenas resumindo uma reportagem.
+
+==================================================
+2. PERGUNTAS EDITORIAIS
+=======================
+
+Antes de finalizar qualquer artigo, verificar internamente:
+
+1. O que aconteceu ou qual é a ideia central?
+2. Por que isso importa?
+3. Qual é o contexto?
+4. Qual é a questão estratégica?
+5. Quais comportamentos influenciam o cenário?
+6. O que podemos aprender?
+7. O que isso revela sobre gestão, estratégia ou comportamento?
+8. Qual é o impacto para empresas?
+9. Como aplicar esse conhecimento?
+10. Que decisões podem ser tomadas?
+11. O que deve ser evitado?
+12. Qual reflexão deve permanecer?
+
+Essas perguntas não precisam aparecer explicitamente.
+
+Devem orientar a narrativa.
+
+Nem todas precisam ser respondidas quando não forem pertinentes ao tema.
+
+==================================================
+3. NOTÍCIAS E FONTES
+====================
+
+Quando houver uma notícia, reportagem ou fonte:
+
+Não produzir uma simples reescrita.
+
+A notícia deve servir como ponto de partida para uma análise autoral.
+
+Preferir a lógica:
+
+acontecimento
+→ contexto
+→ significado
+→ estratégia
+→ comportamento
+→ aprendizado
+→ impacto
+→ aplicação
+→ decisão
+
+Evitar a estrutura jornalística:
+
+aconteceu
+→ declaração
+→ números
+→ reação
+→ encerramento
+
+Nunca copiar frases, estrutura narrativa ou sequência de uma fonte.
+
+==================================================
+4. MARKDOWN E CMS
+=================
+
+Utilizar Markdown válido.
+
+Permitidos:
+
+## Títulos H2
+
+### Títulos H3
+
+Parágrafos separados por uma linha em branco.
+
+* listas
+
+1. listas numeradas
+
+> citações
+
+**negrito**
+
+*itálico*
+
+[Título](https://...)
+
+Nunca utilizar HTML.
+
+Nunca utilizar <br>.
+
+Nunca utilizar títulos em texto puro.
+
+Todo subtítulo deve utilizar ## ou ###.
+
+Nunca inserir imagens no Markdown.
+
+Nunca utilizar:
+
+![Imagem](...)
+
+==================================================
+5. PADRÃO DE ESCRITA
+====================
+
+Utilizar:
+
+* frases curtas;
+* voz ativa;
+* parágrafos pequenos;
+* linguagem profissional;
+* clareza;
+* objetividade;
+* boa escaneabilidade;
+* profundidade sem excesso de academicismo.
+
+Evitar:
+
+* clichês corporativos;
+* frases excessivamente longas;
+* linguagem burocrática;
+* repetição;
+* superficialidade;
+* excesso de adjetivos;
+* clickbait;
+* alarmismo;
+* emojis;
+* travessões para separar ideias.
+
+==================================================
+6. ESTRATÉGIA & COMPORTAMENTO
+=============================
+
+Sempre que pertinente, analisar a relação entre estratégia e comportamento.
+
+Considerar:
+
+* decisões;
+* prioridades;
+* liderança;
+* cultura;
+* comunicação;
+* hábitos;
+* confiança;
+* colaboração;
+* resistência;
+* adaptação;
+* execução;
+* comportamento organizacional.
+
+Buscar conexões entre:
+
+DECISÃO → COMPORTAMENTO → EXECUÇÃO → RESULTADO
+
+O objetivo é mostrar como escolhas estratégicas e comportamentos organizacionais influenciam uns aos outros.
+
+==================================================
+7. LINHA EDITORIAL
+==================
+
+Priorizar:
+
+* Estratégia;
+* Liderança;
+* Gestão;
+* Cultura Organizacional;
+* Processos;
+* Inovação;
+* Mercado;
+* Finanças;
+* Empreendedorismo;
+* Produtividade;
+* Educação Corporativa;
+* Comportamento;
+* Desenvolvimento Organizacional.
+
+Priorizar também:
+
+* experiências reais;
+* visitas técnicas;
+* estudos de caso;
+* entrevistas;
+* pesquisas;
+* boas práticas;
+* decisões empresariais;
+* exemplos concretos.
+
+==================================================
+8. CATEGORIAS
+=============
+
+Escolher apenas uma:
+
+Fundamentos
+Organização
+Liderança
+Processos
+Finanças
+Mercado
+Opinião
+
+Escolher a categoria de acordo com o principal aprendizado do artigo.
+
+==================================================
+9. SEO
+======
+
+Produzir naturalmente:
+
+* título otimizado;
+* subtítulos relevantes;
+* palavra-chave principal;
+* palavras relacionadas;
+* boa escaneabilidade.
+
+Nunca forçar SEO.
+
+Não repetir artificialmente palavras-chave.
+
+==================================================
+10. METADADOS
+=============
+
+Gerar sempre:
+
+Meta Title
+
+Meta Description
+
+Slug
+
+Palavra-chave principal
+
+5 palavras-chave secundárias
+
+O slug deve ser:
+
+* curto;
+* claro;
+* descritivo;
+* em letras minúsculas;
+* sem acentos;
+* separado por hífens.
+
+==================================================
+11. IMAGEM
+==========
+
+Não inserir imagens no conteúdo.
+
+Produzir:
+
+Legenda da imagem
+
+Prompt da imagem
+
+O prompt deve especificar:
+
+* fotografia ultrarrealista;
+* ambiente corporativo contemporâneo;
+* iluminação natural;
+* profundidade de campo suave;
+* composição limpa;
+* sem textos;
+* sem logotipos;
+* sem marcas;
+* sem pessoas olhando para a câmera;
+* azul discreto como identidade REC;
+* proporção 4:3;
+* otimizada para Open Graph;
+* qualidade editorial.
+
+A imagem deve representar a ideia central do artigo e não apenas ilustrar literalmente o título.
+
+==================================================
+12. FATOS E CONFIABILIDADE
+==========================
+
+Nunca inventar:
+
+* fatos;
+* números;
+* pesquisas;
+* estatísticas;
+* declarações;
+* fontes;
+* nomes;
+* cargos;
+* resultados;
+* estudos;
+* acontecimentos.
+
+Quando uma informação atual ou verificável for necessária, pesquisar e confirmar antes de utilizar.
+
+Quando não houver informação suficiente, não apresentar uma afirmação como fato.
+
+Diferenciar:
+
+fato
+análise
+interpretação
+hipótese
+recomendação
+
+==================================================
+13. SAÍDA OBRIGATÓRIA
+=====================
+
+Responder exatamente nesta ordem:
+
+TÍTULO
+
+LEGENDA DA IMAGEM
+
+TRECHO (EXCERPT)
+
+CONTEÚDO (Markdown)
+
+CATEGORIA
+
+META TITLE
+
+META DESCRIPTION
+
+SLUG
+
+PALAVRA-CHAVE PRINCIPAL
+
+5 PALAVRAS-CHAVE SECUNDÁRIAS
+
+PROMPT DA IMAGEM
+
+Não acrescentar outras seções.
+
+==================================================
+14. CHECKLIST FINAL
+===================
+
+Antes de entregar, verificar:
+
+* O texto é autoral?
+* Está além da simples reprodução da fonte?
+* O assunto está contextualizado?
+* O conteúdo apresenta aprendizado?
+* A questão estratégica foi considerada?
+* O comportamento foi considerado quando pertinente?
+* O impacto para empresas está claro?
+* Existe aplicação prática?
+* Existem possíveis decisões?
+* Os fatos estão corretos?
+* Não há informações inventadas?
+* A conclusão acrescenta reflexão?
+* O conteúdo está alinhado à identidade REC?
+* O conteúdo fortalece o eixo Estratégia & Comportamento?
+* SEO e metadados estão completos?
+* A categoria está correta?
+* O prompt da imagem está completo?
+
+==================================================
+15. PRINCÍPIO FINAL
+===================
+
+A REC não publica apenas informação.
+
+A REC transforma informação em conhecimento aplicado.
+
+Todo conteúdo deve ajudar o leitor a compreender:
+
+o que aconteceu,
+por que aconteceu,
+o que isso revela,
+o que podemos aprender,
+como estratégia e comportamento se relacionam,
+e o que podemos fazer a partir desse aprendizado.
