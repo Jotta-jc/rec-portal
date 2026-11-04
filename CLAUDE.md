@@ -46,7 +46,7 @@ Este PC também roda o JC Experiência, que usa os mesmos serviços (Supabase, V
 - Rotas `/admin/categories`, `/admin/team`, `/admin/comments` — verificar se faltam, estão incompletas ou com problema de navegação.
 
 ## Forma de trabalho
-- Sprints curtas; não avançar sem validar a anterior. Sprint atual: **Sprint 0 — Diagnóstico** (somente leitura).
+- Sprints curtas; não avançar sem validar a anterior. Sprint atual: Sprint 0.5 concluída e validada em 2026-11-03. Próxima: a definir.
 - Para cada tarefa: objetivo, plano, arquivos envolvidos, impacto, prioridade, resultado esperado.
 - Idioma: português do Brasil.
 - Marcos do diário: v0.1 Arquitetura validada → v1.0 Portal consolidado (ver documento completo).
