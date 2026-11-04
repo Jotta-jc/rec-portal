@@ -1,27 +1,24 @@
 import { createClient } from "@/lib/supabase/client";
 import { calculateReadingTime } from "@/lib/calculate-reading-time";
+import {
+  normalizeFeatured,
+  releaseFeaturedPosition,
+} from "@/services/admin/featured-position";
 
 export async function updateNews(id: number, values: any) {
   const supabase = createClient();
 
   const payload = {
     ...values,
+
+    // 0 significa "não é destaque" (null no banco).
+    ...normalizeFeatured(values.featured_order),
+
     read_time: calculateReadingTime(values.content),
   };
 
   // Se a notícia será destaque, libera a posição antes
-  if (payload.featured && payload.featured_order > 0) {
-    const { error: clearError } = await supabase
-      .from("news")
-      .update({
-        featured: false,
-        featured_order: 0,
-      })
-      .eq("featured_order", payload.featured_order)
-      .neq("id", id);
-
-    if (clearError) throw clearError;
-  }
+  await releaseFeaturedPosition(supabase, payload.featured_order, id);
 
   const { error } = await supabase
     .from("news")

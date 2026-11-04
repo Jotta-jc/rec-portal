@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
 import { calculateReadingTime } from "@/lib/calculate-reading-time";
+import {
+  normalizeFeatured,
+  releaseFeaturedPosition,
+} from "@/services/admin/featured-position";
 
 type CreateNewsInput = {
   title: string;
@@ -18,20 +22,14 @@ export async function createNews(values: CreateNewsInput) {
   const payload = {
     ...values,
 
-    // 0 significa "não é destaque".
-    // No banco, usamos null para não conflitar com a restrição UNIQUE.
-    featured_order:
-      values.featured && values.featured_order && values.featured_order > 0
-        ? values.featured_order
-        : null,
-
-    featured:
-      values.featured &&
-      values.featured_order !== null &&
-      values.featured_order > 0,
+    // 0 significa "não é destaque" (null no banco).
+    ...normalizeFeatured(values.featured ? values.featured_order : null),
 
     read_time: calculateReadingTime(values.content),
   };
+
+  // Se a notícia será destaque, libera a posição antes
+  await releaseFeaturedPosition(supabase, payload.featured_order);
 
   const { data, error } = await supabase
     .from("news")

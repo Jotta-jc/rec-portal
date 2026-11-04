@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import NewsForm from "@/components/admin/news/NewsForm";
 
 import { getAllCategories } from "@/services/admin/category.service";
